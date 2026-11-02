@@ -1,0 +1,23 @@
+# Ambiente virtual
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Banco de dados local e arquivos gerados
+db.sqlite3
+staticfiles/
+media/
+
+# Variáveis de ambiente
+.env
+
+# Editores e sistema
+.vscode/
+.idea/
+.DS_Store
+
+# Enunciado do trabalho (não faz parte do código)
+Trabalho-Prático-1-Projeto-Django.pdf
