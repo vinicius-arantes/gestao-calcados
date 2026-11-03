@@ -139,11 +139,28 @@ JAZZMIN_SETTINGS = {
     'copyright': 'Passo Firme',
     'show_sidebar': True,
     'navigation_expanded': True,
-    'order_with_respect_to': ['producao', 'catalogo', 'estoque', 'contas', 'auth'],
+    'order_with_respect_to': [
+        'producao', 'catalogo', 'estoque', 'contas', 'auth',
+        'catalogo.Modelo', 'catalogo.Variacao', 'catalogo.Categoria',
+        'catalogo.Colecao', 'catalogo.Cor', 'catalogo.Tamanho',
+        'estoque.Material', 'estoque.Fornecedor',
+        'estoque.MovimentacaoMaterial', 'estoque.MovimentacaoProduto',
+    ],
+    'search_model': ['catalogo.Modelo', 'estoque.Material'],
     'icons': {
         'auth': 'fas fa-users-cog',
         'auth.user': 'fas fa-user',
         'auth.Group': 'fas fa-users',
+        'catalogo.Categoria': 'fas fa-tags',
+        'catalogo.Colecao': 'fas fa-layer-group',
+        'catalogo.Cor': 'fas fa-palette',
+        'catalogo.Tamanho': 'fas fa-ruler',
+        'catalogo.Modelo': 'fas fa-shoe-prints',
+        'catalogo.Variacao': 'fas fa-boxes',
+        'estoque.Fornecedor': 'fas fa-truck',
+        'estoque.Material': 'fas fa-cut',
+        'estoque.MovimentacaoMaterial': 'fas fa-exchange-alt',
+        'estoque.MovimentacaoProduto': 'fas fa-dolly',
     },
     'default_icon_parents': 'fas fa-folder',
     'default_icon_children': 'fas fa-circle',
@@ -151,6 +168,8 @@ JAZZMIN_SETTINGS = {
     'changeform_format': 'horizontal_tabs',
     'changeform_format_overrides': {'auth.user': 'collapsible', 'auth.group': 'vertical_tabs'},
     'show_ui_builder': False,
+    # Exibe na barra superior o seletor de tema e de modo claro/escuro
+    'show_theme_chooser': True,
 }
 
 JAZZMIN_UI_TWEAKS = {
@@ -163,7 +182,7 @@ JAZZMIN_UI_TWEAKS = {
     'sidebar': 'sidebar-dark-orange',
     'sidebar_nav_child_indent': True,
     'sidebar_nav_flat_style': True,
-    # Tema claro padrão e tema escuro automático, conforme o sistema operacional
     'theme': 'flatly',
-    'dark_mode_theme': 'darkly',
+    # Segue o tema do sistema operacional; o usuário pode trocar no seletor da barra superior
+    'default_theme_mode': 'auto',
 }
