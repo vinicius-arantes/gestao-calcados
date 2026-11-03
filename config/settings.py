@@ -27,6 +27,8 @@ ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').sp
 # Application definition
 
 INSTALLED_APPS = [
+    # O Jazzmin precisa vir antes do django.contrib.admin
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -124,3 +126,44 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# ---------------------------------------------------------------------------
+# Jazzmin — tema do ambiente administrativo
+# ---------------------------------------------------------------------------
+JAZZMIN_SETTINGS = {
+    'site_title': 'Passo Firme Admin',
+    'site_header': 'Passo Firme',
+    'site_brand': 'Passo Firme',
+    'welcome_sign': 'Ambiente administrativo — Gestão de Calçados',
+    'copyright': 'Passo Firme',
+    'show_sidebar': True,
+    'navigation_expanded': True,
+    'order_with_respect_to': ['producao', 'catalogo', 'estoque', 'contas', 'auth'],
+    'icons': {
+        'auth': 'fas fa-users-cog',
+        'auth.user': 'fas fa-user',
+        'auth.Group': 'fas fa-users',
+    },
+    'default_icon_parents': 'fas fa-folder',
+    'default_icon_children': 'fas fa-circle',
+    'related_modal_active': True,
+    'changeform_format': 'horizontal_tabs',
+    'changeform_format_overrides': {'auth.user': 'collapsible', 'auth.group': 'vertical_tabs'},
+    'show_ui_builder': False,
+}
+
+JAZZMIN_UI_TWEAKS = {
+    'brand_colour': 'navbar-orange',
+    'accent': 'accent-orange',
+    'navbar': 'navbar-dark',
+    'no_navbar_border': True,
+    'navbar_fixed': True,
+    'sidebar_fixed': True,
+    'sidebar': 'sidebar-dark-orange',
+    'sidebar_nav_child_indent': True,
+    'sidebar_nav_flat_style': True,
+    # Tema claro padrão e tema escuro automático, conforme o sistema operacional
+    'theme': 'flatly',
+    'dark_mode_theme': 'darkly',
+}
