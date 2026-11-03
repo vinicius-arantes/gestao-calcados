@@ -101,6 +101,7 @@ class MovimentacaoProdutoAdmin(MovimentacaoAdminBase):
     list_display = ['data', 'tipo', 'motivo', 'variacao', 'quantidade', 'ordem_producao', 'usuario']
     list_filter = MovimentacaoAdminBase.list_filter + ['variacao__modelo__categoria']
     search_fields = ['variacao__sku', 'variacao__modelo__nome', 'observacao', 'ordem_producao__numero']
+    autocomplete_fields = ['variacao']
     list_select_related = [
         'variacao__modelo', 'variacao__cor', 'variacao__tamanho', 'ordem_producao', 'usuario',
     ]
