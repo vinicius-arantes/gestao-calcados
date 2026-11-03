@@ -1,9 +1,11 @@
 from datetime import timedelta
 
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.utils.html import format_html
 
+from . import services
 from .models import EtapaOrdem, ItemOrdemProducao, OrdemProducao, Setor
 
 
@@ -88,6 +90,7 @@ class OrdemProducaoAdmin(admin.ModelAdmin):
     date_hierarchy = 'data_prevista'
     readonly_fields = ['numero', 'data_inicio', 'data_conclusao']
     list_select_related = ['modelo', 'cor', 'responsavel']
+    actions = ['iniciar', 'concluir', 'cancelar']
     fieldsets = [
         ('Ordem', {'fields': ['numero', 'modelo', 'cor', 'prioridade', 'responsavel', 'status']}),
         ('Datas', {'fields': ['data_emissao', 'data_prevista', 'data_inicio', 'data_conclusao']}),
@@ -139,6 +142,39 @@ class OrdemProducaoAdmin(admin.ModelAdmin):
             '<div class="progress-bar bg-success" style="width:{}%">{}%</div></div>',
             obj.progresso, obj.progresso,
         )
+
+    def _executar(self, request, queryset, funcao, sucesso):
+        """Aplica um serviço a cada ordem selecionada, reportando os erros individualmente."""
+        feitas = 0
+        for ordem in queryset:
+            try:
+                funcao(ordem, request.user)
+                feitas += 1
+            except ValidationError as erro:
+                self.message_user(request, f'{ordem.numero}: {" ".join(erro.messages)}', messages.ERROR)
+        if feitas:
+            self.message_user(request, f'{feitas} ordem(ns) {sucesso}.', messages.SUCCESS)
+
+    @admin.action(description='Iniciar produção (baixa os materiais)', permissions=['iniciar'])
+    def iniciar(self, request, queryset):
+        self._executar(request, queryset, services.iniciar_ordem, 'iniciada(s)')
+
+    @admin.action(description='Concluir produção (entrada no estoque)', permissions=['concluir'])
+    def concluir(self, request, queryset):
+        self._executar(request, queryset, services.concluir_ordem, 'concluída(s)')
+
+    @admin.action(description='Cancelar ordens planejadas', permissions=['change'])
+    def cancelar(self, request, queryset):
+        total = queryset.filter(status=OrdemProducao.Status.PLANEJADA).update(
+            status=OrdemProducao.Status.CANCELADA,
+        )
+        self.message_user(request, f'{total} ordem(ns) cancelada(s).')
+
+    def has_iniciar_permission(self, request):
+        return request.user.has_perm('producao.iniciar_ordemproducao')
+
+    def has_concluir_permission(self, request):
+        return request.user.has_perm('producao.concluir_ordemproducao')
 
 
 @admin.register(EtapaOrdem)
