@@ -168,6 +168,8 @@ JAZZMIN_SETTINGS = {
     'changeform_format': 'horizontal_tabs',
     'changeform_format_overrides': {'auth.user': 'collapsible', 'auth.group': 'vertical_tabs'},
     'show_ui_builder': False,
+    # Exibe na barra superior o seletor de tema e de modo claro/escuro
+    'show_theme_chooser': True,
 }
 
 JAZZMIN_UI_TWEAKS = {
@@ -180,7 +182,7 @@ JAZZMIN_UI_TWEAKS = {
     'sidebar': 'sidebar-dark-orange',
     'sidebar_nav_child_indent': True,
     'sidebar_nav_flat_style': True,
-    # Tema claro padrão e tema escuro automático, conforme o sistema operacional
     'theme': 'flatly',
-    'dark_mode_theme': 'darkly',
+    # Segue o tema do sistema operacional; o usuário pode trocar no seletor da barra superior
+    'default_theme_mode': 'auto',
 }
