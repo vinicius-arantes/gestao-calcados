@@ -97,6 +97,10 @@ class Movimentacao(models.Model):
         settings.AUTH_USER_MODEL, verbose_name='usuário', on_delete=models.SET_NULL,
         null=True, blank=True, related_name='+',
     )
+    ordem_producao = models.ForeignKey(
+        'producao.OrdemProducao', verbose_name='ordem de produção', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='+',
+    )
     observacao = models.CharField('observação', max_length=200, blank=True)
 
     # Nome do campo (FK) do item cujo saldo é afetado; definido nas subclasses
