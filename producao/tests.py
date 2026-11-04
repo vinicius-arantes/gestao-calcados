@@ -1,9 +1,13 @@
 from datetime import timedelta
 from decimal import Decimal
+from io import StringIO
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.core.management import call_command
+from django.core.management.base import CommandError
+from django.db.models import F
+from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from catalogo.models import Categoria, Cor, ItemFichaTecnica, Modelo, Tamanho, Variacao
@@ -81,3 +85,35 @@ class FluxoProducaoTests(TestCase):
         services.iniciar_ordem(self.ordem, self.usuario)
         with self.assertRaises(ValidationError):
             services.concluir_ordem(self.ordem, self.usuario)
+
+
+class PopularDadosTests(TestCase):
+    def popular(self):
+        call_command('popular_dados', stdout=StringIO())
+
+    @override_settings(DEBUG=True)
+    def test_cria_cenario_completo(self):
+        self.popular()
+        for status in OrdemProducao.Status.values:
+            self.assertTrue(OrdemProducao.objects.filter(status=status).exists(), status)
+        self.assertTrue(any(o.atrasada for o in OrdemProducao.objects.all()))
+        self.assertTrue(Material.objects.filter(estoque_atual__lt=F('estoque_minimo')).exists())
+        self.assertTrue(Variacao.objects.filter(estoque_atual__lt=F('estoque_minimo')).exists())
+        self.assertEqual(Variacao.objects.get(sku='TEN-100-BRA-42').estoque_atual, 2)
+        # 120 m² iniciais - consumo das 3 ordens iniciadas (26x0,35 + 20x0,40 + 20x0,60)
+        self.assertEqual(Material.objects.get(codigo='MAT-001').estoque_atual, Decimal('90.9'))
+
+    @override_settings(DEBUG=True)
+    def test_pode_rodar_duas_vezes(self):
+        self.popular()
+        ordens = OrdemProducao.objects.count()
+        saldo = Material.objects.get(codigo='MAT-001').estoque_atual
+        self.popular()
+        self.assertEqual(OrdemProducao.objects.count(), ordens)
+        self.assertEqual(Material.objects.get(codigo='MAT-001').estoque_atual, saldo)
+
+    @override_settings(DEBUG=False)
+    def test_nao_roda_sem_debug(self):
+        with self.assertRaises(CommandError):
+            self.popular()
+        self.assertFalse(User.objects.filter(username='admin').exists())
