@@ -99,7 +99,7 @@ class PopularDadosTests(TestCase):
         self.assertTrue(any(o.atrasada for o in OrdemProducao.objects.all()))
         self.assertTrue(Material.objects.filter(estoque_atual__lt=F('estoque_minimo')).exists())
         self.assertTrue(Variacao.objects.filter(estoque_atual__lt=F('estoque_minimo')).exists())
-        self.assertEqual(Variacao.objects.get(sku='TEN-100-BRA-42').estoque_atual, 2)
+        self.assertEqual(Variacao.objects.get(modelo__referencia='TEN-100', cor__nome='Branco', tamanho__numero=42).estoque_atual, 2)
         # 120 m² iniciais - consumo das 3 ordens iniciadas (26x0,35 + 20x0,40 + 20x0,60)
         self.assertEqual(Material.objects.get(codigo='MAT-001').estoque_atual, Decimal('90.9'))
 

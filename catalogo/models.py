@@ -177,8 +177,9 @@ class Variacao(models.Model):
         return f'{self.modelo.referencia} {self.cor} {self.tamanho}'
 
     def save(self, *args, **kwargs):
-        # SKU gerado automaticamente, ex.: SAN-001-PRE-37
-        self.sku = f'{self.modelo.referencia}-{self.cor.nome[:3].upper()}-{self.tamanho.numero}'
+        # SKU gerado automaticamente: referência-id da cor-numeração, ex.: SAN-001-3-37.
+        # Usa o id porque nomes de cores podem começar igual (Marfim e Marinho).
+        self.sku = f'{self.modelo.referencia}-{self.cor_id}-{self.tamanho.numero}'
         super().save(*args, **kwargs)
 
     @property

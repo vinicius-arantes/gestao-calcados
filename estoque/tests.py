@@ -57,14 +57,14 @@ class MovimentacaoProdutoTests(TestCase):
             referencia='SAN-001', nome='Sandália Verão', genero=Modelo.Genero.FEMININO,
             categoria=Categoria.objects.create(nome='Sandália'), preco_venda=Decimal('129.90'),
         )
+        cor = Cor.objects.create(nome='Preto')
         variacao = Variacao.objects.create(
-            modelo=modelo, cor=Cor.objects.create(nome='Preto'),
-            tamanho=Tamanho.objects.create(numero=37),
+            modelo=modelo, cor=cor, tamanho=Tamanho.objects.create(numero=37),
         )
         MovimentacaoProduto.objects.create(
             variacao=variacao, tipo=TipoMovimentacao.ENTRADA, quantidade=12,
             motivo=MovimentacaoProduto.Motivo.INVENTARIO,
         )
         variacao.refresh_from_db()
-        self.assertEqual(variacao.sku, 'SAN-001-PRE-37')
+        self.assertEqual(variacao.sku, f'SAN-001-{cor.pk}-37')
         self.assertEqual(variacao.estoque_atual, 12)
