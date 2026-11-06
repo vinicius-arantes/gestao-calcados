@@ -1,3 +1,9 @@
-from django.shortcuts import render
+from django.contrib.auth.views import LoginView
 
-# Create your views here.
+from .forms import LoginForm
+
+
+class EntrarView(LoginView):
+    template_name = 'contas/login.html'
+    authentication_form = LoginForm
+    redirect_authenticated_user = True
