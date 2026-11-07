@@ -8,4 +8,5 @@ app_name = 'contas'
 urlpatterns = [
     path('entrar/', views.EntrarView.as_view(), name='login'),
     path('sair/', auth_views.LogoutView.as_view(), name='logout'),
+    path('cadastro/', views.cadastro, name='cadastro'),
 ]

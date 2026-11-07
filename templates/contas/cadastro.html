@@ -1,0 +1,14 @@
+{% extends 'contas/auth_base.html' %}
+{% block titulo %}Cadastre-se{% endblock %}
+{% block formulario %}
+<h2 class="h5 mb-1">Criar conta</h2>
+<p class="small text-body-secondary">Novas contas recebem o perfil <strong>Operador</strong>. Um administrador pode alterar o perfil depois.</p>
+<form method="post" novalidate>
+  {% csrf_token %}
+  {% include 'includes/erros_form.html' %}
+  {% for campo in form %}{% include 'includes/campo.html' %}{% endfor %}
+  <button type="submit" class="btn btn-primary w-100"><i class="bi bi-person-plus"></i> Cadastrar</button>
+</form>
+<hr>
+<p class="text-center mb-0 small">Já tem conta? <a href="{% url 'contas:login' %}">Entrar</a></p>
+{% endblock %}

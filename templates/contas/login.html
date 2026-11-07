@@ -9,4 +9,6 @@
   <input type="hidden" name="next" value="{{ next }}">
   <button type="submit" class="btn btn-primary w-100"><i class="bi bi-box-arrow-in-right"></i> Entrar</button>
 </form>
+<hr>
+<p class="text-center mb-0 small">Ainda não tem conta? <a href="{% url 'contas:cadastro' %}">Cadastre-se</a></p>
 {% endblock %}
