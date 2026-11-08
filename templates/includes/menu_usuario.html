@@ -5,6 +5,7 @@
     <span class="badge text-bg-secondary ms-1">{{ user.perfil.cargo }}</span>
   </a>
   <ul class="dropdown-menu dropdown-menu-end">
+    <li><a class="dropdown-item" href="{% url 'contas:perfil' %}"><i class="bi bi-person"></i> Meu perfil</a></li>
     {% if user.is_staff %}
     <li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="bi bi-shield-lock"></i> Administração</a></li>
     <li><hr class="dropdown-divider"></li>
