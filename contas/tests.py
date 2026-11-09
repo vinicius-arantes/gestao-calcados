@@ -63,3 +63,56 @@ class PerfisDeAcessoTests(TestCase):
         resposta = self.client.get('/admin/')
         self.assertEqual(resposta.status_code, 302)
         self.assertIn('/admin/login/', resposta['Location'])
+
+
+class AutenticacaoTests(TestCase):
+    SENHA = 'Sapato#2026x'
+
+    def test_area_do_usuario_exige_login(self):
+        resposta = self.client.get('/')
+        self.assertRedirects(resposta, '/contas/entrar/?next=/')
+
+    def test_login_e_logout(self):
+        User.objects.create_user('ana', password=self.SENHA)
+        resposta = self.client.post('/contas/entrar/', {'username': 'ana', 'password': self.SENHA})
+        self.assertRedirects(resposta, '/')
+        resposta = self.client.post('/contas/sair/')
+        self.assertRedirects(resposta, '/contas/entrar/')
+        self.assertRedirects(self.client.get('/'), '/contas/entrar/?next=/')
+
+    def test_login_com_senha_errada(self):
+        User.objects.create_user('ana', password=self.SENHA)
+        resposta = self.client.post('/contas/entrar/', {'username': 'ana', 'password': 'errada'})
+        self.assertEqual(resposta.status_code, 200)
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    def test_cadastro_cria_operador_e_entra_no_sistema(self):
+        resposta = self.client.post('/contas/cadastro/', {
+            'username': 'novo', 'first_name': 'Novo', 'last_name': 'Usuário',
+            'email': 'novo@exemplo.com', 'matricula': 'M-1',
+            'password1': self.SENHA, 'password2': self.SENHA,
+        })
+        self.assertRedirects(resposta, '/')
+        usuario = User.objects.get(username='novo')
+        self.assertEqual(usuario.perfil.cargo, GRUPO_OPERADOR)
+        self.assertEqual(usuario.perfil.matricula, 'M-1')
+        self.assertFalse(usuario.is_staff)
+
+    def test_cadastro_recusa_email_repetido(self):
+        User.objects.create_user('ana', email='ana@exemplo.com')
+        resposta = self.client.post('/contas/cadastro/', {
+            'username': 'outra', 'first_name': 'A', 'last_name': 'B', 'email': 'ANA@exemplo.com',
+            'password1': self.SENHA, 'password2': self.SENHA,
+        })
+        self.assertContains(resposta, 'Já existe um usuário com este e-mail')
+        self.assertFalse(User.objects.filter(username='outra').exists())
+
+    def test_meu_perfil_salva_dados(self):
+        self.client.force_login(User.objects.create_user('ana'))
+        self.client.post('/contas/perfil/', {
+            'first_name': 'Ana', 'last_name': 'Souza', 'email': 'ana@exemplo.com',
+            'matricula': 'M-9', 'telefone': '(35) 90000-0000', 'setor': '',
+        })
+        usuario = User.objects.get(username='ana')
+        self.assertEqual(usuario.last_name, 'Souza')
+        self.assertEqual(usuario.perfil.telefone, '(35) 90000-0000')

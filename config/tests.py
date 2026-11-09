@@ -13,12 +13,14 @@ class ExemploForm(BootstrapFormMixin, forms.Form):
 
 class LayoutTests(TestCase):
     def test_pagina_inicial_usa_bootstrap_e_tema(self):
+        self.client.force_login(User.objects.create_user('usuario'))
         html = self.client.get('/').content.decode()
         self.assertIn('bootstrap@5.3.3', html)
         self.assertIn('data-bs-theme', html)
         self.assertIn('id="alternar-tema"', html)
 
     def test_link_do_admin_so_para_equipe(self):
+        self.client.force_login(User.objects.create_user('usuario'))
         self.assertNotIn('Administração', self.client.get('/').content.decode())
         self.client.force_login(User.objects.create_user('equipe', is_staff=True))
         self.assertIn('Administração', self.client.get('/').content.decode())
