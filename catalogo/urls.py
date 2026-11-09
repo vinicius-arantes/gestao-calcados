@@ -6,5 +6,8 @@ app_name = 'catalogo'
 
 urlpatterns = [
     path('modelos/', views.ModeloListView.as_view(), name='modelo_lista'),
+    path('modelos/novo/', views.ModeloCreateView.as_view(), name='modelo_novo'),
     path('modelos/<int:pk>/', views.ModeloDetailView.as_view(), name='modelo_detalhe'),
+    path('modelos/<int:pk>/editar/', views.ModeloUpdateView.as_view(), name='modelo_editar'),
+    path('modelos/<int:pk>/excluir/', views.ModeloDeleteView.as_view(), name='modelo_excluir'),
 ]

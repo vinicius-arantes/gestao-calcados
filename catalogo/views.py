@@ -1,8 +1,13 @@
+from django.contrib import messages
+from django.db import transaction
 from django.db.models import Q, Sum
-from django.views.generic import DetailView, ListView
+from django.shortcuts import redirect
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
-from config.mixins import AcessoMixin
+from config.mixins import AcessoMixin, CrudMixin, ExclusaoMixin
 
+from .forms import FichaTecnicaFormSet, ModeloForm
 from .models import Categoria, Modelo
 
 
@@ -46,3 +51,51 @@ class ModeloDetailView(AcessoMixin, DetailView):
         contexto['variacoes'] = self.object.variacoes.select_related('cor', 'tamanho')
         contexto['ordens'] = self.object.ordens.select_related('cor')[:10]
         return contexto
+
+
+class ModeloFormMixin:
+    """Salva o modelo junto com a ficha técnica (formset)."""
+
+    model = Modelo
+    form_class = ModeloForm
+    template_name = 'catalogo/modelo_form.html'
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        contexto.setdefault('ficha', FichaTecnicaFormSet(instance=self.object))
+        return contexto
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object() if 'pk' in kwargs else None
+        form = self.get_form()
+        ficha = FichaTecnicaFormSet(request.POST, instance=self.object)
+        if form.is_valid() and ficha.is_valid():
+            with transaction.atomic():
+                self.object = form.save()
+                ficha.instance = self.object
+                ficha.save()
+            messages.success(request, self.mensagem_sucesso)
+            return redirect(self.object)
+        return self.render_to_response(self.get_context_data(form=form, ficha=ficha))
+
+    def get_success_url(self):
+        return self.object.get_absolute_url() if self.object else reverse_lazy('catalogo:modelo_lista')
+
+
+class ModeloCreateView(ModeloFormMixin, CrudMixin, CreateView):
+    permission_required = 'catalogo.add_modelo'
+    titulo = 'Novo modelo'
+    mensagem_sucesso = 'Modelo cadastrado.'
+
+
+class ModeloUpdateView(ModeloFormMixin, CrudMixin, UpdateView):
+    permission_required = 'catalogo.change_modelo'
+    titulo = 'Editar modelo'
+    mensagem_sucesso = 'Modelo atualizado.'
+
+
+class ModeloDeleteView(ExclusaoMixin, DeleteView):
+    permission_required = 'catalogo.delete_modelo'
+    model = Modelo
+    success_url = reverse_lazy('catalogo:modelo_lista')
+    mensagem_sucesso = 'Modelo excluído.'

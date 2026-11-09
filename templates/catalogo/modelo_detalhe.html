@@ -13,7 +13,14 @@
     <h1 class="h3 mb-1">{{ object.nome }} {% if not object.ativo %}<span class="badge text-bg-warning align-middle fs-6">Inativo</span>{% endif %}</h1>
     <p class="text-body-secondary mb-0">{{ object.referencia }} · {{ object.categoria }} · {{ object.get_genero_display }}{% if object.colecao %} · {{ object.colecao }}{% endif %}</p>
   </div>
-  <div class="d-flex flex-wrap gap-2">{% block acoes %}{% endblock %}</div>
+  <div class="d-flex flex-wrap gap-2">
+    {% if perms.catalogo.change_modelo %}
+    <a class="btn btn-outline-primary" href="{% url 'catalogo:modelo_editar' object.pk %}"><i class="bi bi-pencil"></i> Editar</a>
+    {% endif %}
+    {% if perms.catalogo.delete_modelo %}
+    <a class="btn btn-outline-danger" href="{% url 'catalogo:modelo_excluir' object.pk %}"><i class="bi bi-trash"></i> Excluir</a>
+    {% endif %}
+  </div>
 </div>
 
 <div class="row g-3 mb-4">

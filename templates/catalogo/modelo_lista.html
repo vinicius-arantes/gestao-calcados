@@ -3,7 +3,9 @@
 {% block conteudo %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <h1 class="h3 mb-0">Modelos</h1>
-  {% block acoes %}{% endblock %}
+  {% if perms.catalogo.add_modelo %}
+  <a class="btn btn-primary" href="{% url 'catalogo:modelo_novo' %}"><i class="bi bi-plus-lg"></i> Novo modelo</a>
+  {% endif %}
 </div>
 
 <form class="row g-2 mb-3" method="get">
