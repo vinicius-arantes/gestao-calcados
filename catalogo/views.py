@@ -1,13 +1,13 @@
 from django.contrib import messages
 from django.db import transaction
-from django.db.models import Q, Sum
+from django.db.models import Count, Q, Sum
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from config.mixins import AcessoMixin, CrudMixin, ExclusaoMixin
 
-from .forms import FichaTecnicaFormSet, ModeloForm
+from .forms import CategoriaForm, FichaTecnicaFormSet, ModeloForm
 from .models import Categoria, Modelo
 
 
@@ -99,3 +99,31 @@ class ModeloDeleteView(ExclusaoMixin, DeleteView):
     model = Modelo
     success_url = reverse_lazy('catalogo:modelo_lista')
     mensagem_sucesso = 'Modelo excluído.'
+
+
+class CategoriaListView(AcessoMixin, ListView):
+    permission_required = 'catalogo.view_categoria'
+    template_name = 'catalogo/categoria_lista.html'
+    queryset = Categoria.objects.annotate(qtd_modelos=Count('modelos')).order_by('nome')
+
+
+class CategoriaCreateView(CrudMixin, CreateView):
+    permission_required = 'catalogo.add_categoria'
+    model = Categoria
+    form_class = CategoriaForm
+    titulo = 'Nova categoria'
+    success_url = reverse_lazy('catalogo:categoria_lista')
+
+
+class CategoriaUpdateView(CrudMixin, UpdateView):
+    permission_required = 'catalogo.change_categoria'
+    model = Categoria
+    form_class = CategoriaForm
+    titulo = 'Editar categoria'
+    success_url = reverse_lazy('catalogo:categoria_lista')
+
+
+class CategoriaDeleteView(ExclusaoMixin, DeleteView):
+    permission_required = 'catalogo.delete_categoria'
+    model = Categoria
+    success_url = reverse_lazy('catalogo:categoria_lista')

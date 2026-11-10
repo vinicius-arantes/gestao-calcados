@@ -24,3 +24,10 @@ class ItemFichaTecnicaForm(BootstrapFormMixin, forms.ModelForm):
 FichaTecnicaFormSet = forms.inlineformset_factory(
     Modelo, ItemFichaTecnica, form=ItemFichaTecnicaForm, extra=3, can_delete=True,
 )
+
+
+class CategoriaForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = Categoria
+        fields = ['nome', 'descricao']
+        widgets = {'descricao': forms.Textarea(attrs={'rows': 3})}

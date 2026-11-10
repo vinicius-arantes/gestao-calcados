@@ -10,6 +10,9 @@
   </a>
   <ul class="dropdown-menu">
     <li><a class="dropdown-item" href="{% url 'catalogo:modelo_lista' %}">Modelos</a></li>
+    {% if perms.catalogo.view_categoria %}
+    <li><a class="dropdown-item" href="{% url 'catalogo:categoria_lista' %}">Categorias</a></li>
+    {% endif %}
   </ul>
 </li>
 {% endif %}
