@@ -16,3 +16,16 @@
   </ul>
 </li>
 {% endif %}
+{% if perms.estoque.view_material %}
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle {% if request.resolver_match.app_name == 'estoque' %}active{% endif %}" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+    <i class="bi bi-box-seam"></i> Estoque
+  </a>
+  <ul class="dropdown-menu">
+    <li><a class="dropdown-item" href="{% url 'estoque:material_lista' %}">Materiais</a></li>
+    {% if perms.estoque.view_fornecedor %}
+    <li><a class="dropdown-item" href="{% url 'estoque:fornecedor_lista' %}">Fornecedores</a></li>
+    {% endif %}
+  </ul>
+</li>
+{% endif %}
