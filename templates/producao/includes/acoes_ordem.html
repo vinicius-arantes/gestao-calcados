@@ -1,0 +1,6 @@
+{% if object.status == 'PLANEJADA' and perms.producao.change_ordemproducao %}
+<a class="btn btn-outline-primary" href="{% url 'producao:ordem_editar' object.pk %}"><i class="bi bi-pencil"></i> Editar</a>
+{% endif %}
+{% if object.status == 'PLANEJADA' or object.status == 'CANCELADA' %}{% if perms.producao.delete_ordemproducao %}
+<a class="btn btn-outline-danger" href="{% url 'producao:ordem_excluir' object.pk %}"><i class="bi bi-trash"></i> Excluir</a>
+{% endif %}{% endif %}

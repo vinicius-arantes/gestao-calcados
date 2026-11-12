@@ -3,6 +3,9 @@
 {% block conteudo %}
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
   <h1 class="h3 mb-0">Ordens de produção</h1>
+  {% if perms.producao.add_ordemproducao %}
+  <a class="btn btn-primary" href="{% url 'producao:ordem_nova' %}"><i class="bi bi-plus-lg"></i> Nova ordem</a>
+  {% endif %}
 </div>
 <form class="row g-2 mb-3" method="get">
   <div class="col-12 col-md-5">

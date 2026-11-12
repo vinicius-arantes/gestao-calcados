@@ -10,6 +10,9 @@
   </a>
   <ul class="dropdown-menu">
     <li><a class="dropdown-item" href="{% url 'producao:ordem_lista' %}">Ordens de produção</a></li>
+    {% if perms.producao.add_ordemproducao %}
+    <li><a class="dropdown-item" href="{% url 'producao:ordem_nova' %}">Nova ordem</a></li>
+    {% endif %}
   </ul>
 </li>
 {% endif %}
