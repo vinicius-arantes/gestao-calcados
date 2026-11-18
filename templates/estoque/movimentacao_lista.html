@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block titulo %}Movimentações{% endblock %}
+{% block conteudo %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">Movimentações</h1>
+  {% if de_produto %}
+    {% if perms.estoque.add_movimentacaoproduto %}<a class="btn btn-primary" href="{% url 'estoque:movimentar_produto' %}"><i class="bi bi-plus-lg"></i> Nova movimentação</a>{% endif %}
+  {% elif perms.estoque.add_movimentacaomaterial %}
+    <a class="btn btn-primary" href="{% url 'estoque:movimentar_material' %}"><i class="bi bi-plus-lg"></i> Nova movimentação</a>
+  {% endif %}
+</div>
+<ul class="nav nav-tabs mb-3">
+  <li class="nav-item"><a class="nav-link {% if not de_produto %}active{% endif %}" href="?">Materiais</a></li>
+  {% if perms.estoque.view_movimentacaoproduto %}
+  <li class="nav-item"><a class="nav-link {% if de_produto %}active{% endif %}" href="?de=produto">Produto acabado</a></li>
+  {% endif %}
+</ul>
+<div class="btn-group mb-3" role="group" aria-label="Filtrar por tipo">
+  <a class="btn btn-sm btn-outline-secondary {% if not request.GET.tipo %}active{% endif %}" href="{% querystring tipo=None page=None %}">Todas</a>
+  <a class="btn btn-sm btn-outline-success {% if request.GET.tipo == 'E' %}active{% endif %}" href="{% querystring tipo='E' page=None %}">Entradas</a>
+  <a class="btn btn-sm btn-outline-danger {% if request.GET.tipo == 'S' %}active{% endif %}" href="{% querystring tipo='S' page=None %}">Saídas</a>
+</div>
+<div class="table-responsive">
+  <table class="table table-sm table-hover">
+    <thead><tr><th>Data</th><th>Tipo</th><th>Motivo</th><th>{% if de_produto %}SKU{% else %}Material{% endif %}</th><th class="text-end">Quantidade</th><th>Ordem</th><th>Usuário</th><th>Observação</th></tr></thead>
+    <tbody>
+      {% for mov in object_list %}
+      <tr>
+        <td class="text-nowrap">{{ mov.data|date:"d/m/Y H:i" }}</td>
+        <td><span class="badge text-bg-{% if mov.tipo == 'E' %}success{% else %}danger{% endif %}">{{ mov.get_tipo_display }}</span></td>
+        <td>{{ mov.get_motivo_display }}</td>
+        <td>{% if de_produto %}<code>{{ mov.variacao.sku }}</code>{% else %}{{ mov.material.nome }}{% endif %}</td>
+        <td class="text-end">{% if de_produto %}{{ mov.quantidade }} pares{% else %}{{ mov.quantidade|floatformat:"-3" }} {{ mov.material.get_unidade_display }}{% endif %}</td>
+        <td>{{ mov.ordem_producao.numero|default:"-" }}</td>
+        <td>{{ mov.usuario|default:"-" }}</td>
+        <td class="small text-body-secondary">{{ mov.observacao }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" class="text-body-secondary">Nenhuma movimentação encontrada.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include 'includes/paginacao.html' %}
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block titulo %}Materiais{% endblock %}
+{% block conteudo %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">Materiais</h1>
+  <div class="d-flex flex-wrap gap-2">
+    {% if perms.estoque.add_movimentacaomaterial %}
+    <a class="btn btn-outline-primary" href="{% url 'estoque:movimentar_material' %}"><i class="bi bi-arrow-left-right"></i> Movimentar</a>
+    {% endif %}
+    {% if perms.estoque.add_material %}
+    <a class="btn btn-primary" href="{% url 'estoque:material_novo' %}"><i class="bi bi-plus-lg"></i> Novo material</a>
+    {% endif %}
+  </div>
+</div>
+
+<form class="row g-2 mb-3" method="get">
+  <div class="col-12 col-md-5">
+    <input class="form-control" type="search" name="q" value="{{ request.GET.q }}" placeholder="Buscar por código ou nome" aria-label="Buscar">
+  </div>
+  <div class="col-6 col-md-3">
+    <select class="form-select" name="tipo" aria-label="Tipo">
+      <option value="">Tipo</option>
+      {% for valor, rotulo in tipos %}
+      <option value="{{ valor }}" {% if request.GET.tipo == valor %}selected{% endif %}>{{ rotulo }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-6 col-md-4 d-flex align-items-center gap-2">
+    <div class="form-check mb-0">
+      <input class="form-check-input" type="checkbox" name="repor" value="1" id="repor" {% if request.GET.repor == '1' %}checked{% endif %}>
+      <label class="form-check-label" for="repor">Só abaixo do mínimo</label>
+    </div>
+    <button class="btn btn-outline-primary ms-auto" type="submit"><i class="bi bi-funnel"></i> Filtrar</button>
+  </div>
+</form>
+
+<div class="table-responsive">
+  <table class="table table-hover">
+    <thead>
+      <tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Fornecedor</th><th class="text-end">Custo (R$)</th><th class="text-end">Saldo</th><th class="text-end">Mínimo</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for material in object_list %}
+      <tr class="{% if material.abaixo_do_minimo %}table-warning{% endif %}">
+        <td><code>{{ material.codigo }}</code></td>
+        <td>{{ material.nome }}{% if not material.ativo %} <span class="badge text-bg-secondary">Inativo</span>{% endif %}</td>
+        <td>{{ material.get_tipo_display }}</td>
+        <td>{{ material.fornecedor|default:"-" }}</td>
+        <td class="text-end">{{ material.custo_unitario }}</td>
+        <td class="text-end fw-semibold">
+          {{ material.estoque_atual|floatformat:"-3" }} {{ material.get_unidade_display }}
+          {% if material.abaixo_do_minimo %}<i class="bi bi-exclamation-triangle text-warning" title="Abaixo do mínimo"></i>{% endif %}
+        </td>
+        <td class="text-end">{{ material.estoque_minimo|floatformat:"-3" }}</td>
+        <td class="text-end text-nowrap">
+          {% if perms.estoque.add_movimentacaomaterial %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'estoque:movimentar_material' %}?material={{ material.pk }}" title="Movimentar"><i class="bi bi-arrow-left-right"></i></a>{% endif %}
+          {% if perms.estoque.change_material %}<a class="btn btn-sm btn-outline-primary" href="{% url 'estoque:material_editar' material.pk %}" title="Editar"><i class="bi bi-pencil"></i></a>{% endif %}
+          {% if perms.estoque.delete_material %}<a class="btn btn-sm btn-outline-danger" href="{% url 'estoque:material_excluir' material.pk %}" title="Excluir"><i class="bi bi-trash"></i></a>{% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" class="text-body-secondary">Nenhum material encontrado.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include 'includes/paginacao.html' %}
+{% endblock %}

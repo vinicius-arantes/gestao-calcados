@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block titulo %}Fornecedores{% endblock %}
+{% block conteudo %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">Fornecedores</h1>
+  {% if perms.estoque.add_fornecedor %}
+  <a class="btn btn-primary" href="{% url 'estoque:fornecedor_novo' %}"><i class="bi bi-plus-lg"></i> Novo fornecedor</a>
+  {% endif %}
+</div>
+<form class="d-flex gap-2 mb-3" method="get">
+  <input class="form-control" type="search" name="q" value="{{ request.GET.q }}" placeholder="Buscar por nome, CNPJ ou cidade" aria-label="Buscar">
+  <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
+</form>
+<div class="table-responsive">
+  <table class="table table-hover">
+    <thead><tr><th>Razão social</th><th>CNPJ</th><th>Cidade</th><th>Contato</th><th></th></tr></thead>
+    <tbody>
+      {% for fornecedor in object_list %}
+      <tr>
+        <td>{{ fornecedor.nome }}{% if not fornecedor.ativo %} <span class="badge text-bg-secondary">Inativo</span>{% endif %}</td>
+        <td>{{ fornecedor.cnpj }}</td>
+        <td>{{ fornecedor.cidade }}{% if fornecedor.uf %}/{{ fornecedor.uf }}{% endif %}</td>
+        <td class="small">{{ fornecedor.telefone }}{% if fornecedor.email %}<br>{{ fornecedor.email }}{% endif %}</td>
+        <td class="text-end text-nowrap">
+          {% if perms.estoque.change_fornecedor %}<a class="btn btn-sm btn-outline-primary" href="{% url 'estoque:fornecedor_editar' fornecedor.pk %}" title="Editar"><i class="bi bi-pencil"></i></a>{% endif %}
+          {% if perms.estoque.delete_fornecedor %}<a class="btn btn-sm btn-outline-danger" href="{% url 'estoque:fornecedor_excluir' fornecedor.pk %}" title="Excluir"><i class="bi bi-trash"></i></a>{% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="text-body-secondary">Nenhum fornecedor encontrado.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include 'includes/paginacao.html' %}
+{% endblock %}

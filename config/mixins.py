@@ -23,7 +23,8 @@ class CrudMixin(AcessoMixin):
     def get_context_data(self, **kwargs):
         contexto = super().get_context_data(**kwargs)
         contexto['titulo'] = self.titulo
-        contexto['url_cancelar'] = self.get_success_url()
+        # Na criação ainda não há objeto para montar a URL de sucesso; usa a fixa, se houver
+        contexto['url_cancelar'] = self.success_url or self.get_success_url()
         return contexto
 
     def form_valid(self, form):

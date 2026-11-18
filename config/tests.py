@@ -36,3 +36,24 @@ class LayoutTests(TestCase):
         self.assertEqual(form.fields['nome'].widget.attrs['class'], 'form-control')
         self.assertEqual(form.fields['tipo'].widget.attrs['class'], 'form-select')
         self.assertEqual(form.fields['ativo'].widget.attrs['class'], 'form-check-input')
+
+
+class TelasDeFormularioTests(TestCase):
+    """Abre (GET) todas as telas de criação para garantir que renderizam."""
+
+    URLS_DE_CRIACAO = [
+        '/catalogo/modelos/novo/',
+        '/catalogo/categorias/nova/',
+        '/estoque/materiais/novo/',
+        '/estoque/fornecedores/novo/',
+        '/estoque/movimentacoes/material/',
+        '/estoque/movimentacoes/produto/',
+    ]
+
+    def test_telas_de_criacao_abrem(self):
+        self.client.force_login(User.objects.create_superuser('admin'))
+        for url in self.URLS_DE_CRIACAO:
+            with self.subTest(url=url):
+                resposta = self.client.get(url)
+                self.assertEqual(resposta.status_code, 200)
+                self.assertContains(resposta, 'Cancelar')
