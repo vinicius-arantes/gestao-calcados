@@ -33,6 +33,7 @@ O sistema tem duas áreas, ambas protegidas por login:
 - Python 3.12
 - Django 5.2
 - django-jazzmin 3.0 (tema do ambiente administrativo)
+- Bootstrap 5.3 e Bootstrap Icons (interface da área do usuário, via CDN)
 - SQLite (banco de dados relacional)
 
 ## Instalação
@@ -127,6 +128,17 @@ Para criar apenas os grupos e as permissões, sem os dados de demonstração, us
   - Usuários: perfil de acesso
 - Ações em massa para iniciar, concluir e cancelar ordens e para ativar e desativar modelos
 
+## Interface
+
+- Bootstrap 5.3 em todas as telas da área do usuário, com layout responsivo: o menu vira
+  um menu sanfonado no celular e as tabelas rolam na horizontal em telas estreitas
+- **Tema claro e escuro**: o botão de lua/sol na barra superior alterna o tema. Na primeira
+  visita, segue o tema do sistema operacional; depois, lembra a escolha no navegador
+- O ambiente administrativo tem o seu próprio seletor de claro/escuro, na barra superior do
+  Jazzmin
+- Formulários, paginação, confirmação de exclusão e páginas de erro (403 e 404) seguem o
+  mesmo visual
+
 ## Modelagem do banco de dados
 
 ```mermaid
@@ -158,18 +170,27 @@ erDiagram
 ```text
 gestao-calcados/
 ├── config/              # Configurações do projeto (settings, urls, tema Jazzmin)
+│   ├── views.py         # Painel inicial
+│   ├── forms.py         # Mixin que aplica o Bootstrap nos formulários
+│   └── mixins.py        # Controle de acesso e telas de cadastro reutilizáveis
 ├── catalogo/            # Categorias, coleções, cores, tamanhos, modelos, ficha técnica e SKUs
 ├── estoque/             # Fornecedores, materiais e movimentações
 ├── producao/            # Setores, ordens de produção, grade e etapas
 │   ├── services.py      # Regras do fluxo: iniciar, avançar etapa e concluir ordem
 │   └── management/commands/popular_dados.py
-├── contas/              # Perfil de usuário e grupos de acesso
+├── contas/              # Login, cadastro, perfil de usuário e grupos de acesso
 │   └── management/commands/criar_grupos.py
-├── templates/           # Templates globais
-├── static/              # Arquivos estáticos globais
+├── templates/
+│   ├── base.html        # Layout com menu, tema claro/escuro e mensagens
+│   ├── includes/        # Menu, campos de formulário, paginação
+│   └── contas/ catalogo/ estoque/ producao/   # Telas de cada app
+├── static/css/app.css   # Ajustes visuais e cores da marca nos dois temas
 ├── manage.py
 └── requirements.txt
 ```
+
+Cada app segue a mesma organização: `models.py` (tabelas), `admin.py` (ambiente
+administrativo), `views.py`, `forms.py` e `urls.py` (área do usuário) e `tests.py`.
 
 ## Fluxo de trabalho no Git
 
