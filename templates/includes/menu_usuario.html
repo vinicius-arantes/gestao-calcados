@@ -1,5 +1,24 @@
-{% if user.is_staff %}
+{% if user.is_authenticated %}
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+    <i class="bi bi-person-circle"></i> {{ user.first_name|default:user.username }}
+    <span class="badge text-bg-secondary ms-1">{{ user.perfil.cargo }}</span>
+  </a>
+  <ul class="dropdown-menu dropdown-menu-end">
+    {% if user.is_staff %}
+    <li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="bi bi-shield-lock"></i> Administração</a></li>
+    <li><hr class="dropdown-divider"></li>
+    {% endif %}
+    <li>
+      <form method="post" action="{% url 'contas:logout' %}">
+        {% csrf_token %}
+        <button class="dropdown-item text-danger" type="submit"><i class="bi bi-box-arrow-right"></i> Sair</button>
+      </form>
+    </li>
+  </ul>
+</li>
+{% else %}
 <li class="nav-item">
-  <a class="nav-link" href="{% url 'admin:index' %}"><i class="bi bi-shield-lock"></i> Administração</a>
+  <a class="nav-link" href="{% url 'contas:login' %}"><i class="bi bi-box-arrow-in-right"></i> Entrar</a>
 </li>
 {% endif %}

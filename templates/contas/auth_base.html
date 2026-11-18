@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block conteudo %}
+<div class="tela-auth mx-auto py-4">
+  <div class="text-center mb-4">
+    <i class="bi bi-building-gear text-marca display-4"></i>
+    <h1 class="h3 fw-bold mt-2">Passo Firme</h1>
+    <p class="text-body-secondary">Gestão de estoque e produção de calçados</p>
+  </div>
+  <div class="card shadow-sm">
+    <div class="card-body p-4">
+      {% block formulario %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% endblock %}
