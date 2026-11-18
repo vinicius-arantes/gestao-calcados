@@ -17,10 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from . import views
+
 admin.site.site_header = 'Passo Firme — Administração'
 admin.site.site_title = 'Passo Firme'
 admin.site.index_title = 'Gestão de estoque e produção'
 
 urlpatterns = [
+    path('', views.inicio, name='inicio'),
     path('admin/', admin.site.urls),
 ]
