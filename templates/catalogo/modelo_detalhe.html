@@ -14,6 +14,9 @@
     <p class="text-body-secondary mb-0">{{ object.referencia }} · {{ object.categoria }} · {{ object.get_genero_display }}{% if object.colecao %} · {{ object.colecao }}{% endif %}</p>
   </div>
   <div class="d-flex flex-wrap gap-2">
+    {% if perms.producao.add_ordemproducao and object.ativo %}
+    <a class="btn btn-primary" href="{% url 'producao:ordem_nova' %}?modelo={{ object.pk }}"><i class="bi bi-clipboard-plus"></i> Nova ordem</a>
+    {% endif %}
     {% if perms.catalogo.change_modelo %}
     <a class="btn btn-outline-primary" href="{% url 'catalogo:modelo_editar' object.pk %}"><i class="bi bi-pencil"></i> Editar</a>
     {% endif %}
