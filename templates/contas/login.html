@@ -1,0 +1,14 @@
+{% extends 'contas/auth_base.html' %}
+{% block titulo %}Entrar{% endblock %}
+{% block formulario %}
+<h2 class="h5 mb-3">Entrar no sistema</h2>
+<form method="post" novalidate>
+  {% csrf_token %}
+  {% include 'includes/erros_form.html' %}
+  {% for campo in form %}{% include 'includes/campo.html' %}{% endfor %}
+  <input type="hidden" name="next" value="{{ next }}">
+  <button type="submit" class="btn btn-primary w-100"><i class="bi bi-box-arrow-in-right"></i> Entrar</button>
+</form>
+<hr>
+<p class="text-center mb-0 small">Ainda não tem conta? <a href="{% url 'contas:cadastro' %}">Cadastre-se</a></p>
+{% endblock %}

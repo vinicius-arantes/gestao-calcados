@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block titulo %}Painel dos setores{% endblock %}
+{% block conteudo %}
+<h1 class="h3 mb-3">Painel dos setores</h1>
+<ul class="nav nav-pills flex-wrap gap-1 mb-3">
+  <li class="nav-item"><a class="nav-link {% if not setor_id %}active{% endif %}" href="?setor=">Todos</a></li>
+  {% for setor in setores %}
+  <li class="nav-item"><a class="nav-link {% if setor_id == setor.pk|stringformat:'s' %}active{% endif %}" href="?setor={{ setor.pk }}">{{ setor.sequencia }}. {{ setor.nome }}</a></li>
+  {% endfor %}
+</ul>
+<div class="row row-cols-1 row-cols-lg-2 g-3">
+  {% for etapa in etapas %}
+  <div class="col">
+    <div class="card h-100 shadow-sm {% if etapa.ordem.atrasada %}border-danger{% endif %}">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <a class="fw-semibold" href="{{ etapa.ordem.get_absolute_url }}">{{ etapa.ordem.numero }}</a>
+        <span>
+          {% if etapa.ordem.prioridade >= 3 %}<span class="badge text-bg-danger">{{ etapa.ordem.get_prioridade_display }}</span>{% endif %}
+          <span class="badge text-bg-{{ etapa.cor_status }}">{{ etapa.setor }} · {{ etapa.get_status_display }}</span>
+        </span>
+      </div>
+      <div class="card-body">
+        <p class="mb-1">{{ etapa.ordem.modelo }} · {{ etapa.ordem.cor }}</p>
+        <p class="small text-body-secondary mb-3">
+          {{ etapa.ordem.total_pares }} pares ·
+          prazo <span class="{% if etapa.ordem.atrasada %}text-danger fw-semibold{% endif %}">{{ etapa.ordem.data_prevista|date:"d/m/Y" }}</span>
+          {% if etapa.inicio %} · em andamento desde {{ etapa.inicio|date:"d/m H:i" }}{% endif %}
+        </p>
+        {% include 'producao/includes/avancar_etapa.html' %}
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12"><div class="alert alert-info mb-0">Nenhuma ordem aguardando {% if setor_id %}neste setor{% else %}nos setores{% endif %}.</div></div>
+  {% endfor %}
+</div>
+{% endblock %}

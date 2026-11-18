@@ -1,0 +1,57 @@
+<li class="nav-item">
+  <a class="nav-link {% if request.resolver_match.url_name == 'inicio' %}active{% endif %}" href="{% url 'inicio' %}">
+    <i class="bi bi-house"></i> Início
+  </a>
+</li>
+{% if perms.producao.view_ordemproducao %}
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle {% if request.resolver_match.app_name == 'producao' %}active{% endif %}" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+    <i class="bi bi-gear-wide-connected"></i> Produção
+  </a>
+  <ul class="dropdown-menu">
+    <li><a class="dropdown-item" href="{% url 'producao:ordem_lista' %}">Ordens de produção</a></li>
+    {% if perms.producao.add_ordemproducao %}
+    <li><a class="dropdown-item" href="{% url 'producao:ordem_nova' %}">Nova ordem</a></li>
+    {% endif %}
+    {% if perms.producao.view_etapaordem %}
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="{% url 'producao:painel' %}">Painel dos setores</a></li>
+    {% endif %}
+  </ul>
+</li>
+{% endif %}
+{% if perms.catalogo.view_modelo %}
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle {% if request.resolver_match.app_name == 'catalogo' %}active{% endif %}" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+    <i class="bi bi-bag"></i> Catálogo
+  </a>
+  <ul class="dropdown-menu">
+    <li><a class="dropdown-item" href="{% url 'catalogo:modelo_lista' %}">Modelos</a></li>
+    {% if perms.catalogo.view_categoria %}
+    <li><a class="dropdown-item" href="{% url 'catalogo:categoria_lista' %}">Categorias</a></li>
+    {% endif %}
+  </ul>
+</li>
+{% endif %}
+{% if perms.estoque.view_material or perms.catalogo.view_variacao %}
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle {% if request.resolver_match.app_name == 'estoque' %}active{% endif %}" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+    <i class="bi bi-box-seam"></i> Estoque
+  </a>
+  <ul class="dropdown-menu">
+    {% if perms.estoque.view_material %}
+    <li><a class="dropdown-item" href="{% url 'estoque:material_lista' %}">Materiais</a></li>
+    {% endif %}
+    {% if perms.catalogo.view_variacao %}
+    <li><a class="dropdown-item" href="{% url 'estoque:produto_lista' %}">Produto acabado</a></li>
+    {% endif %}
+    {% if perms.estoque.view_fornecedor %}
+    <li><a class="dropdown-item" href="{% url 'estoque:fornecedor_lista' %}">Fornecedores</a></li>
+    {% endif %}
+    {% if perms.estoque.view_movimentacaomaterial %}
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="{% url 'estoque:movimentacao_lista' %}">Movimentações</a></li>
+    {% endif %}
+  </ul>
+</li>
+{% endif %}

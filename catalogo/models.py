@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
+from django.urls import reverse
 
 
 class Categoria(models.Model):
@@ -103,6 +104,9 @@ class Modelo(models.Model):
 
     def __str__(self):
         return f'{self.referencia} — {self.nome}'
+
+    def get_absolute_url(self):
+        return reverse('catalogo:modelo_detalhe', args=[self.pk])
 
     @property
     def custo_materiais(self):

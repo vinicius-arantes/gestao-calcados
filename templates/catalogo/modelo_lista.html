@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block titulo %}Modelos{% endblock %}
+{% block conteudo %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">Modelos</h1>
+  {% if perms.catalogo.add_modelo %}
+  <a class="btn btn-primary" href="{% url 'catalogo:modelo_novo' %}"><i class="bi bi-plus-lg"></i> Novo modelo</a>
+  {% endif %}
+</div>
+
+<form class="row g-2 mb-3" method="get">
+  <div class="col-12 col-md-5">
+    <input class="form-control" type="search" name="q" value="{{ request.GET.q }}" placeholder="Buscar por referência ou nome" aria-label="Buscar">
+  </div>
+  <div class="col-6 col-md-2">
+    <select class="form-select" name="categoria" aria-label="Categoria">
+      <option value="">Categoria</option>
+      {% for categoria in categorias %}
+      <option value="{{ categoria.pk }}" {% if request.GET.categoria == categoria.pk|stringformat:"s" %}selected{% endif %}>{{ categoria }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-6 col-md-2">
+    <select class="form-select" name="genero" aria-label="Gênero">
+      <option value="">Gênero</option>
+      {% for valor, rotulo in generos %}
+      <option value="{{ valor }}" {% if request.GET.genero == valor %}selected{% endif %}>{{ rotulo }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-12 col-md-3 d-flex align-items-center gap-2">
+    <div class="form-check mb-0">
+      <input class="form-check-input" type="checkbox" name="inativos" value="1" id="inativos" {% if request.GET.inativos == '1' %}checked{% endif %}>
+      <label class="form-check-label" for="inativos">Incluir inativos</label>
+    </div>
+    <button class="btn btn-outline-primary ms-auto" type="submit"><i class="bi bi-funnel"></i> Filtrar</button>
+  </div>
+</form>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+  {% for modelo in object_list %}
+  <div class="col">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+          <span class="badge text-bg-secondary">{{ modelo.referencia }}</span>
+          {% if not modelo.ativo %}<span class="badge text-bg-warning">Inativo</span>{% endif %}
+        </div>
+        <h2 class="h5 mt-2 mb-1"><a class="stretched-link text-decoration-none" href="{{ modelo.get_absolute_url }}">{{ modelo.nome }}</a></h2>
+        <p class="text-body-secondary small mb-2">{{ modelo.categoria }} · {{ modelo.get_genero_display }}{% if modelo.colecao %} · {{ modelo.colecao }}{% endif %}</p>
+        <div class="d-flex justify-content-between">
+          <span class="fw-semibold">R$ {{ modelo.preco_venda }}</span>
+          <span class="text-body-secondary"><i class="bi bi-box-seam"></i> {{ modelo.estoque|default:0 }} pares</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12"><div class="alert alert-info mb-0">Nenhum modelo encontrado.</div></div>
+  {% endfor %}
+</div>
+{% include 'includes/paginacao.html' %}
+{% endblock %}

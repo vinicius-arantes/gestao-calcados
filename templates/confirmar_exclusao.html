@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block titulo %}Excluir{% endblock %}
+{% block conteudo %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card border-danger shadow-sm">
+      <div class="card-header text-bg-danger"><h1 class="h5 mb-0"><i class="bi bi-exclamation-triangle"></i> Confirmar exclusão</h1></div>
+      <div class="card-body">
+        <p>Tem certeza de que deseja excluir <strong>{{ object }}</strong>? Esta ação não pode ser desfeita.</p>
+        <form method="post" class="d-flex gap-2 justify-content-end">
+          {% csrf_token %}
+          <a href="{{ url_cancelar }}" class="btn btn-outline-secondary">Cancelar</a>
+          <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Excluir</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

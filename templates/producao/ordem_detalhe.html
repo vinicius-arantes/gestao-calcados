@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block titulo %}{{ object.numero }}{% endblock %}
+{% block conteudo %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'producao:ordem_lista' %}">Ordens de produção</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ object.numero }}</li>
+  </ol>
+</nav>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">
+      {{ object.numero }}
+      <span class="badge text-bg-{{ object.cor_status }} align-middle fs-6">{{ object.get_status_display }}</span>
+      {% if object.atrasada %}<span class="badge text-bg-danger align-middle fs-6"><i class="bi bi-alarm"></i> Atrasada</span>{% endif %}
+    </h1>
+    <p class="text-body-secondary mb-0">
+      {% if perms.catalogo.view_modelo %}<a href="{{ object.modelo.get_absolute_url }}">{{ object.modelo }}</a>{% else %}{{ object.modelo }}{% endif %}
+      · {{ object.cor }} · prioridade {{ object.get_prioridade_display|lower }}
+    </p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">{% include 'producao/includes/acoes_ordem.html' %}</div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3"><div class="card h-100"><div class="card-body">
+    <div class="small text-body-secondary">Total de pares</div><div class="fs-5 fw-semibold">{{ object.total_pares }}</div>
+  </div></div></div>
+  <div class="col-6 col-lg-3"><div class="card h-100"><div class="card-body">
+    <div class="small text-body-secondary">Emissão</div><div class="fs-5 fw-semibold">{{ object.data_emissao|date:"d/m/Y" }}</div>
+  </div></div></div>
+  <div class="col-6 col-lg-3"><div class="card h-100"><div class="card-body">
+    <div class="small text-body-secondary">Prazo</div><div class="fs-5 fw-semibold {% if object.atrasada %}text-danger{% endif %}">{{ object.data_prevista|date:"d/m/Y" }}</div>
+  </div></div></div>
+  <div class="col-6 col-lg-3"><div class="card h-100"><div class="card-body">
+    <div class="small text-body-secondary">Responsável</div><div class="fs-5 fw-semibold">{{ object.responsavel.get_full_name|default:object.responsavel|default:"-" }}</div>
+  </div></div></div>
+</div>
+{% if object.observacoes %}<p>{{ object.observacoes|linebreaksbr }}</p>{% endif %}
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <h2 class="h5">Etapas <small class="text-body-secondary">({{ object.progresso }}% concluído)</small></h2>
+    <div class="list-group mb-4">
+      {% for etapa in etapas %}
+      <div class="list-group-item {% if etapa == etapa_atual and object.status == 'EM_PRODUCAO' %}list-group-item-warning{% endif %}">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <div>
+            <span class="badge text-bg-{{ etapa.cor_status }} me-1">{{ etapa.get_status_display }}</span>
+            <strong>{{ etapa.setor }}</strong>
+            <div class="small text-body-secondary">
+              {% if etapa.inicio %}Início {{ etapa.inicio|date:"d/m H:i" }}{% endif %}
+              {% if etapa.fim %} · fim {{ etapa.fim|date:"d/m H:i" }}{% endif %}
+              {% if etapa.operador %} · {{ etapa.operador.get_full_name|default:etapa.operador }}{% endif %}
+              {% if etapa.pares_refugo %} · <span class="text-danger">{{ etapa.pares_refugo }} com defeito</span>{% endif %}
+              {% if etapa.observacao %} · {{ etapa.observacao }}{% endif %}
+            </div>
+          </div>
+          {% if etapa == etapa_atual %}{% include 'producao/includes/avancar_etapa.html' %}{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <h2 class="h5">Grade de tamanhos</h2>
+    <div class="table-responsive mb-4">
+      <table class="table table-sm">
+        <thead><tr>{% for item in itens %}<th class="text-center">{{ item.tamanho }}</th>{% endfor %}</tr></thead>
+        <tbody><tr>{% for item in itens %}<td class="text-center">{{ item.quantidade }}</td>{% empty %}<td class="text-body-secondary">Grade não informada.</td>{% endfor %}</tr></tbody>
+      </table>
+    </div>
+    <h2 class="h5">Materiais necessários</h2>
+    <div class="table-responsive">
+      <table class="table table-sm">
+        <thead><tr><th>Material</th><th class="text-end">Necessário</th>{% if object.status == 'PLANEJADA' %}<th class="text-end">Disponível</th>{% endif %}</tr></thead>
+        <tbody>
+          {% for linha in necessidade %}
+          <tr class="{% if object.status == 'PLANEJADA' and not linha.suficiente %}table-danger{% endif %}">
+            <td>{{ linha.material.nome }}</td>
+            <td class="text-end">{{ linha.necessario|floatformat:"-3" }} {{ linha.material.get_unidade_display }}</td>
+            {% if object.status == 'PLANEJADA' %}<td class="text-end">{{ linha.material.estoque_atual|floatformat:"-3" }}</td>{% endif %}
+          </tr>
+          {% empty %}
+          <tr><td colspan="3" class="text-body-secondary">O modelo não tem ficha técnica.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
