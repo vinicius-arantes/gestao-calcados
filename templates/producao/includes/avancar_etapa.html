@@ -1,0 +1,19 @@
+{% if etapa.ordem.status == 'EM_PRODUCAO' and perms.producao.change_etapaordem %}
+<form method="post" action="{% url 'producao:etapa_avancar' etapa.pk %}" class="d-flex flex-wrap align-items-end gap-2">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+  {% if etapa.status == 'PENDENTE' %}
+  <button class="btn btn-sm btn-warning" type="submit"><i class="bi bi-play-fill"></i> Iniciar etapa</button>
+  {% else %}
+  <div>
+    <label class="form-label small mb-0" for="refugo-{{ etapa.pk }}">Defeitos</label>
+    <input class="form-control form-control-sm" style="width: 6rem" type="number" min="0" value="0" name="pares_refugo" id="refugo-{{ etapa.pk }}">
+  </div>
+  <div>
+    <label class="form-label small mb-0" for="obs-{{ etapa.pk }}">Observação</label>
+    <input class="form-control form-control-sm" type="text" maxlength="200" name="observacao" id="obs-{{ etapa.pk }}">
+  </div>
+  <button class="btn btn-sm btn-success" type="submit"><i class="bi bi-check-lg"></i> Concluir etapa</button>
+  {% endif %}
+</form>
+{% endif %}

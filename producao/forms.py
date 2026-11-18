@@ -29,3 +29,8 @@ GradeFormSet = forms.inlineformset_factory(
     OrdemProducao, ItemOrdemProducao, form=ItemOrdemForm,
     extra=4, can_delete=True, min_num=1, validate_min=True,
 )
+
+
+class ConcluirEtapaForm(BootstrapFormMixin, forms.Form):
+    pares_refugo = forms.IntegerField(label='Pares com defeito', min_value=0, initial=0)
+    observacao = forms.CharField(label='Observação', max_length=200, required=False)

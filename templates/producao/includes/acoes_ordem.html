@@ -1,5 +1,22 @@
-{% if object.status == 'PLANEJADA' and perms.producao.change_ordemproducao %}
-<a class="btn btn-outline-primary" href="{% url 'producao:ordem_editar' object.pk %}"><i class="bi bi-pencil"></i> Editar</a>
+{% if object.status == 'PLANEJADA' %}
+  {% if perms.producao.iniciar_ordemproducao %}
+  <form method="post" action="{% url 'producao:ordem_iniciar' object.pk %}">
+    {% csrf_token %}
+    <button class="btn btn-success" type="submit"><i class="bi bi-play-fill"></i> Iniciar produção</button>
+  </form>
+  {% endif %}
+  {% if perms.producao.change_ordemproducao %}
+  <a class="btn btn-outline-primary" href="{% url 'producao:ordem_editar' object.pk %}"><i class="bi bi-pencil"></i> Editar</a>
+  <form method="post" action="{% url 'producao:ordem_cancelar' object.pk %}">
+    {% csrf_token %}
+    <button class="btn btn-outline-warning" type="submit"><i class="bi bi-x-circle"></i> Cancelar ordem</button>
+  </form>
+  {% endif %}
+{% elif object.status == 'EM_PRODUCAO' and perms.producao.concluir_ordemproducao %}
+  <form method="post" action="{% url 'producao:ordem_concluir' object.pk %}">
+    {% csrf_token %}
+    <button class="btn btn-success" type="submit" {% if etapa_atual %}disabled title="Conclua todas as etapas primeiro"{% endif %}><i class="bi bi-check2-all"></i> Concluir ordem</button>
+  </form>
 {% endif %}
 {% if object.status == 'PLANEJADA' or object.status == 'CANCELADA' %}{% if perms.producao.delete_ordemproducao %}
 <a class="btn btn-outline-danger" href="{% url 'producao:ordem_excluir' object.pk %}"><i class="bi bi-trash"></i> Excluir</a>
