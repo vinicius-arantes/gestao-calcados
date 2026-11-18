@@ -13,4 +13,8 @@ urlpatterns = [
     path('fornecedores/novo/', views.FornecedorCreateView.as_view(), name='fornecedor_novo'),
     path('fornecedores/<int:pk>/editar/', views.FornecedorUpdateView.as_view(), name='fornecedor_editar'),
     path('fornecedores/<int:pk>/excluir/', views.FornecedorDeleteView.as_view(), name='fornecedor_excluir'),
+    path('produtos/', views.ProdutoListView.as_view(), name='produto_lista'),
+    path('movimentacoes/', views.MovimentacaoListView.as_view(), name='movimentacao_lista'),
+    path('movimentacoes/material/', views.MovimentacaoMaterialCreateView.as_view(), name='movimentar_material'),
+    path('movimentacoes/produto/', views.MovimentacaoProdutoCreateView.as_view(), name='movimentar_produto'),
 ]
