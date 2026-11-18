@@ -4,6 +4,8 @@ from django.contrib.auth.models import User
 
 from config.forms import BootstrapFormMixin
 
+from .models import Perfil
+
 
 class LoginForm(BootstrapFormMixin, AuthenticationForm):
     pass
@@ -24,3 +26,15 @@ class CadastroForm(BootstrapFormMixin, UserCreationForm):
         if User.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError('Já existe um usuário com este e-mail.')
         return email
+
+
+class UsuarioForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email']
+
+
+class PerfilForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = Perfil
+        fields = ['matricula', 'telefone', 'setor']
