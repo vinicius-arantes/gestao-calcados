@@ -21,9 +21,12 @@ até o par pronto no estoque:
 6. Ao concluir a ordem, os pares entram no estoque de produto acabado, por **SKU**
    (modelo + cor + tamanho).
 
-**Situação atual (Checkpoint 1):** modelagem do banco, ambiente administrativo com tema e
-filtros, perfis de acesso e dados de demonstração. A área do usuário final (login, cadastro
-e telas próprias com Bootstrap) será entregue no Checkpoint 2.
+O sistema tem duas áreas, ambas protegidas por login:
+
+- **Área do usuário** (`/`): telas do dia a dia da fábrica, em que cada perfil vê e faz
+  apenas o que lhe cabe.
+- **Ambiente administrativo** (`/admin/`): Django Admin com tema Jazzmin e filtros, para a
+  equipe de gestão.
 
 ## Tecnologias utilizadas
 
@@ -54,7 +57,8 @@ No Windows, use `python` no lugar de `python3`.
 python manage.py runserver
 ```
 
-Acesse o ambiente administrativo em <http://localhost:8000/admin/>.
+- Área do usuário: <http://localhost:8000/> (sem login, abre a tela de entrada)
+- Ambiente administrativo: <http://localhost:8000/admin/>
 
 Para rodar os testes automatizados:
 
@@ -69,15 +73,33 @@ Criados pelo comando `popular_dados`, com a senha `passofirme123`. O comando só
 
 | Usuário | Perfil | O que pode fazer |
 |---|---|---|
-| `admin` | Administrador | Tudo |
-| `gerente` | Gerente de Produção | Tudo em catálogo e produção; consultar estoque e lançar movimentações |
-| `estoquista` | Estoquista | Tudo em estoque; consultar catálogo e produção; manter SKUs |
-| `operador` | Operador | Consultar catálogo e produção; atualizar etapas. Não acessa o admin: usará a área do usuário final (Checkpoint 2) |
+| `admin` | Administrador | Tudo, nas duas áreas |
+| `gerente` | Gerente de Produção | Tudo em catálogo e produção, incluindo iniciar e concluir ordens; consultar estoque e lançar movimentações |
+| `estoquista` | Estoquista | Tudo em estoque; consultar catálogo e produção |
+| `operador` | Operador | Consultar catálogo, produção e produto acabado; avançar as etapas no painel dos setores. Não acessa o admin |
+
+Quem se cadastra pela tela **Cadastre-se** recebe o perfil Operador. Um administrador pode
+trocar o perfil depois, no admin.
 
 Para criar apenas os grupos e as permissões, sem os dados de demonstração, use
 `python manage.py criar_grupos`.
 
 ## Principais funcionalidades
+
+**Contas e acesso**
+- Login, logout, cadastre-se e meu perfil (dados pessoais, matrícula, telefone e setor)
+- Perfis de acesso por grupos do Django: os menus e botões mostram só o que o perfil pode
+  fazer, e o acesso direto pela URL sem permissão mostra a página 403
+
+**Área do usuário**
+- Painel inicial com indicadores do perfil: ordens em produção e atrasadas, pares em estoque,
+  materiais a repor, próximas entregas e últimas movimentações
+- Catálogo: modelos com busca e filtros, detalhe com custo, margem, ficha técnica e estoque
+  por SKU; cadastro de modelos com a ficha técnica no mesmo formulário; categorias
+- Estoque: materiais e fornecedores, produto acabado por SKU, histórico e lançamento de
+  movimentações
+- Produção: ordens com grade de tamanhos, iniciar, concluir e cancelar, avanço das etapas e
+  painel com a fila de trabalho de cada setor
 
 **Catálogo**
 - Categorias, coleções, cores e tamanhos
