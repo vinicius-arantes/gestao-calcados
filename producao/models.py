@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Sum
+from django.urls import reverse
 from django.utils import timezone
 
 
@@ -65,6 +66,9 @@ class OrdemProducao(models.Model):
 
     def __str__(self):
         return f'{self.numero} — {self.modelo.referencia} {self.cor}'
+
+    def get_absolute_url(self):
+        return reverse('producao:ordem_detalhe', args=[self.pk])
 
     def save(self, *args, **kwargs):
         criando = self.pk is None

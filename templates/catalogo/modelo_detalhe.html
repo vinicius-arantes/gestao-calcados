@@ -83,7 +83,7 @@
         <tbody>
           {% for ordem in ordens %}
           <tr>
-            <td>{{ ordem.numero }}</td>
+            <td>{% if perms.producao.view_ordemproducao %}<a href="{{ ordem.get_absolute_url }}">{{ ordem.numero }}</a>{% else %}{{ ordem.numero }}{% endif %}</td>
             <td>{{ ordem.cor }}</td>
             <td><span class="badge text-bg-{{ ordem.cor_status }}">{{ ordem.get_status_display }}</span></td>
             <td>{{ ordem.data_prevista|date:"d/m/Y" }}</td>
