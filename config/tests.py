@@ -48,6 +48,7 @@ class TelasDeFormularioTests(TestCase):
         '/estoque/fornecedores/novo/',
         '/estoque/movimentacoes/material/',
         '/estoque/movimentacoes/produto/',
+        '/producao/ordens/nova/',
     ]
 
     def test_telas_de_criacao_abrem(self):

@@ -2,7 +2,7 @@ from datetime import timedelta
 from decimal import Decimal
 from io import StringIO
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.core.management.base import CommandError
@@ -11,6 +11,7 @@ from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from catalogo.models import Categoria, Cor, ItemFichaTecnica, Modelo, Tamanho, Variacao
+from contas.models import GRUPO_ESTOQUISTA, GRUPO_GERENTE, GRUPO_OPERADOR
 from estoque.models import Material, MovimentacaoMaterial, TipoMovimentacao
 
 from . import services
@@ -117,3 +118,130 @@ class PopularDadosTests(TestCase):
         with self.assertRaises(CommandError):
             self.popular()
         self.assertFalse(User.objects.filter(username='admin').exists())
+
+
+class TelasProducaoTests(TestCase):
+    def setUp(self):
+        call_command('criar_grupos', stdout=StringIO())
+        for seq, nome in enumerate(['Corte', 'Montagem'], start=1):
+            Setor.objects.create(nome=nome, sequencia=seq)
+        self.gerente = self.criar_usuario('gerente', GRUPO_GERENTE)
+        self.operador = self.criar_usuario('operador', GRUPO_OPERADOR)
+        self.estoquista = self.criar_usuario('estoquista', GRUPO_ESTOQUISTA)
+
+        couro = Material.objects.create(
+            codigo='CO-01', nome='Couro', tipo='COURO', unidade='m2', custo_unitario=Decimal('80'),
+        )
+        MovimentacaoMaterial.objects.create(
+            material=couro, tipo=TipoMovimentacao.ENTRADA, quantidade=Decimal('10'), motivo='COMPRA',
+        )
+        self.modelo = Modelo.objects.create(
+            referencia='TEN-01', nome='Tênis', genero='U', preco_venda=Decimal('200'),
+            categoria=Categoria.objects.create(nome='Tênis'),
+        )
+        ItemFichaTecnica.objects.create(modelo=self.modelo, material=couro, quantidade_por_par=Decimal('0.5'))
+        self.cor = Cor.objects.create(nome='Preto')
+        self.tamanho = Tamanho.objects.create(numero=40)
+
+    def criar_usuario(self, nome, grupo):
+        usuario = User.objects.create_user(nome)
+        usuario.groups.add(Group.objects.get(name=grupo))
+        return usuario
+
+    def criar_ordem(self, pares=4):
+        ordem = OrdemProducao.objects.create(
+            modelo=self.modelo, cor=self.cor, data_prevista=timezone.localdate() + timedelta(days=5),
+        )
+        ItemOrdemProducao.objects.create(ordem=ordem, tamanho=self.tamanho, quantidade=pares)
+        return ordem
+
+    def test_gerente_cria_ordem_com_grade(self):
+        self.client.force_login(self.gerente)
+        resposta = self.client.post('/producao/ordens/nova/', {
+            'modelo': self.modelo.pk, 'cor': self.cor.pk, 'prioridade': 2,
+            'data_prevista': (timezone.localdate() + timedelta(days=5)).isoformat(),
+            'itens-TOTAL_FORMS': '1', 'itens-INITIAL_FORMS': '0',
+            'itens-MIN_NUM_FORMS': '1', 'itens-MAX_NUM_FORMS': '1000',
+            'itens-0-tamanho': self.tamanho.pk, 'itens-0-quantidade': '6',
+        })
+        ordem = OrdemProducao.objects.get()
+        self.assertRedirects(resposta, ordem.get_absolute_url())
+        self.assertEqual(ordem.total_pares, 6)
+        self.assertEqual(ordem.etapas.count(), 2)
+
+    def test_ordem_sem_grade_nao_e_criada(self):
+        self.client.force_login(self.gerente)
+        self.client.post('/producao/ordens/nova/', {
+            'modelo': self.modelo.pk, 'cor': self.cor.pk, 'prioridade': 2,
+            'data_prevista': timezone.localdate().isoformat(),
+            'itens-TOTAL_FORMS': '1', 'itens-INITIAL_FORMS': '0',
+            'itens-MIN_NUM_FORMS': '1', 'itens-MAX_NUM_FORMS': '1000',
+        })
+        self.assertFalse(OrdemProducao.objects.exists())
+
+    def test_fluxo_completo_pela_interface(self):
+        ordem = self.criar_ordem(pares=4)
+        self.client.force_login(self.gerente)
+        self.client.post(f'/producao/ordens/{ordem.pk}/iniciar/')
+        self.assertEqual(Material.objects.get().estoque_atual, Decimal('8'))
+
+        self.client.force_login(self.operador)
+        for etapa in ordem.etapas.all():
+            self.client.post(f'/producao/etapas/{etapa.pk}/avancar/')
+            self.client.post(f'/producao/etapas/{etapa.pk}/avancar/', {'pares_refugo': '0'})
+        self.assertEqual(self.client.post(f'/producao/ordens/{ordem.pk}/concluir/').status_code, 403)
+
+        self.client.force_login(self.gerente)
+        self.client.post(f'/producao/ordens/{ordem.pk}/concluir/')
+        ordem.refresh_from_db()
+        self.assertEqual(ordem.status, OrdemProducao.Status.CONCLUIDA)
+        self.assertEqual(Variacao.objects.get().estoque_atual, 4)
+
+    def test_iniciar_sem_material_mostra_erro(self):
+        ordem = self.criar_ordem(pares=100)
+        self.client.force_login(self.gerente)
+        resposta = self.client.post(f'/producao/ordens/{ordem.pk}/iniciar/', follow=True)
+        self.assertContains(resposta, 'Material insuficiente')
+        ordem.refresh_from_db()
+        self.assertEqual(ordem.status, OrdemProducao.Status.PLANEJADA)
+
+    def test_ordem_em_producao_nao_pode_ser_editada(self):
+        ordem = self.criar_ordem()
+        services.iniciar_ordem(ordem, self.gerente)
+        self.client.force_login(self.gerente)
+        self.assertEqual(self.client.get(f'/producao/ordens/{ordem.pk}/editar/').status_code, 404)
+        self.assertEqual(self.client.get(f'/producao/ordens/{ordem.pk}/excluir/').status_code, 404)
+
+    def test_avancar_etapa_nao_redireciona_para_outro_site(self):
+        ordem = self.criar_ordem()
+        services.iniciar_ordem(ordem, self.gerente)
+        self.client.force_login(self.operador)
+        resposta = self.client.post(
+            f'/producao/etapas/{ordem.etapa_atual.pk}/avancar/', {'next': 'https://exemplo.com/'},
+        )
+        self.assertRedirects(resposta, ordem.get_absolute_url())
+
+    def test_painel_do_operador_abre_no_setor_dele(self):
+        montagem = Setor.objects.get(nome='Montagem')
+        self.operador.perfil.setor = montagem
+        self.operador.perfil.save()
+        ordem = self.criar_ordem()
+        services.iniciar_ordem(ordem, self.gerente)  # etapa atual: Corte
+        self.client.force_login(self.operador)
+        self.assertNotContains(self.client.get('/producao/painel/'), ordem.numero)
+        self.assertContains(self.client.get('/producao/painel/?setor='), ordem.numero)
+
+    def test_permissoes_por_perfil(self):
+        ordem = self.criar_ordem()
+        self.client.force_login(self.estoquista)
+        self.assertEqual(self.client.get('/producao/ordens/').status_code, 200)
+        self.assertEqual(self.client.get('/producao/ordens/nova/').status_code, 403)
+        self.assertEqual(self.client.post(f'/producao/ordens/{ordem.pk}/iniciar/').status_code, 403)
+
+    def test_painel_inicial_conforme_perfil(self):
+        self.client.force_login(self.gerente)
+        self.assertContains(self.client.get('/'), 'Materiais a repor')
+        self.client.force_login(self.operador)
+        resposta = self.client.get('/')
+        self.assertContains(resposta, 'Ordens atrasadas')
+        self.assertNotContains(resposta, 'Materiais a repor')
