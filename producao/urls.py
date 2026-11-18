@@ -14,4 +14,5 @@ urlpatterns = [
     path('ordens/<int:pk>/concluir/', views.concluir_ordem, name='ordem_concluir'),
     path('ordens/<int:pk>/cancelar/', views.cancelar_ordem, name='ordem_cancelar'),
     path('etapas/<int:pk>/avancar/', views.avancar_etapa, name='etapa_avancar'),
+    path('painel/', views.painel_setores, name='painel'),
 ]

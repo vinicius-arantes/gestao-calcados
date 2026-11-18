@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Q
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -14,7 +14,7 @@ from config.mixins import AcessoMixin, CrudMixin, ExclusaoMixin
 
 from . import services
 from .forms import ConcluirEtapaForm, GradeFormSet, OrdemProducaoForm
-from .models import EtapaOrdem, OrdemProducao
+from .models import EtapaOrdem, OrdemProducao, Setor
 
 
 class OrdemListView(AcessoMixin, ListView):
@@ -186,3 +186,28 @@ def avancar_etapa(request, pk):
     if url_has_allowed_host_and_scheme(destino, allowed_hosts={request.get_host()}):
         return redirect(destino)
     return redirect(etapa.ordem)
+
+
+@login_required
+@permission_required('producao.view_etapaordem', raise_exception=True)
+def painel_setores(request):
+    """Fila de cada setor: ordens em produção cuja etapa atual está no setor."""
+    setores = Setor.objects.filter(ativo=True)
+    setor_id = request.GET.get('setor')
+    if setor_id is None and request.user.perfil.setor_id:
+        setor_id = str(request.user.perfil.setor_id)
+
+    etapas = []
+    ordens = (
+        OrdemProducao.objects.filter(status=OrdemProducao.Status.EM_PRODUCAO)
+        .select_related('modelo', 'cor').prefetch_related('itens')
+        .order_by('-prioridade', 'data_prevista')
+    )
+    for ordem in ordens:
+        etapa = ordem.etapa_atual
+        if etapa and (not setor_id or str(etapa.setor_id) == setor_id):
+            etapas.append(etapa)
+
+    return render(request, 'producao/painel_setores.html', {
+        'setores': setores, 'setor_id': setor_id or '', 'etapas': etapas,
+    })

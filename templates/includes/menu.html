@@ -13,6 +13,10 @@
     {% if perms.producao.add_ordemproducao %}
     <li><a class="dropdown-item" href="{% url 'producao:ordem_nova' %}">Nova ordem</a></li>
     {% endif %}
+    {% if perms.producao.view_etapaordem %}
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="{% url 'producao:painel' %}">Painel dos setores</a></li>
+    {% endif %}
   </ul>
 </li>
 {% endif %}
